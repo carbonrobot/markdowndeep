@@ -1888,6 +1888,7 @@ var MarkdownDeep = new function () {
                     sb.Append("</strong>");
                     break;
 
+                // Single line code span. `code`
                 case TokenType_code_span:
                     sb.Append("<code>");
                     sb.HtmlEncode(str, t.startOffset, t.length);
@@ -2452,7 +2453,7 @@ var MarkdownDeep = new function () {
         return this.CreateDataToken(token_type, new LinkInfo(def, link_text));
     }
 
-    // Process a ``` code span ```
+    // Process a `code span`.
     p.ProcessCodeSpan = function () {
         var p = this.m_Scanner;
         var start = p.m_position;
@@ -2476,10 +2477,8 @@ var MarkdownDeep = new function () {
         if (!p.Find(p.buf.substr(start, tickcount)))
             return this.CreateToken(TokenType_Text, start, p.m_position - start);
 
-        // Save end position before backing up over trailing whitespace
+        // Save end position.
         var endpos = p.m_position + tickcount;
-        while (is_whitespace(p.CharAtOffset(-1)))
-            p.SkipForward(-1);
 
         // Create the token, move back to the end and we're done
         var ret = this.CreateToken(TokenType_code_span, startofcode, p.m_position - startofcode);
@@ -2677,12 +2676,33 @@ var MarkdownDeep = new function () {
                 b.HtmlEncode(this.buf, this.contentStart, this.contentLen);
                 return;
 
+            // ``` or ~~~ code block.
             case BlockType_codeblock:
                 b.Append("<pre");
                 if (m.FormatCodeBlockAttributes != null) {
                     b.Append(m.FormatCodeBlockAttributes(this.data));
                 }
-                b.Append("><code>");
+                // it may not be [0], could be [1].
+                var lines = this.children[0].buf.split("\n");
+                var rgx_lang = /(?:~~~|```)[a-zA-Z]+/;
+                for (var i=0; i < lines.length; i++) {
+                  // ```ruby
+                  if (rgx_lang.test(lines[i]) === true) {
+                    break;
+                  }
+                }
+
+                // substring 3 to remove leading ```
+                var line1 = lines[i].substring(3);
+                var lang = '';
+                var langOffset = 0;
+                // Ensure line1 isn't just whitespace.
+                if ( /^\s*$/.test(line1) === false ) {
+                  lang = ' class="'+line1+'"';
+                  // remove lang\n from output (+1 for newline)
+                  langOffset = line1.length + 1;
+                }
+                b.Append("><code"+ lang +">");
 
                 var btemp = b;
                 if (m.FormatCodeBlock) {
@@ -2692,7 +2712,7 @@ var MarkdownDeep = new function () {
 
                 for (var i = 0; i < this.children.length; i++) {
                     var line = this.children[i];
-                    b.HtmlEncodeAndConvertTabsToSpaces(line.buf, line.contentStart, line.contentLen);
+                    b.HtmlEncodeAndConvertTabsToSpaces(line.buf, line.contentStart + langOffset, line.contentLen - langOffset);
                     b.Append("\n");
                 }
 
@@ -3407,8 +3427,8 @@ var MarkdownDeep = new function () {
 
 
             // Fenced code blocks?
-            if (ch == '~') {
-                if (this.ProcessFencedCodeBlock(p, b))
+            if (ch == '~' || ch == '`') {
+                if (this.ProcessFencedCodeBlock(p, b, ch))
                     return b.blockType;
 
                 // Rewind
@@ -4135,12 +4155,13 @@ var MarkdownDeep = new function () {
     }
 
 
-    p.ProcessFencedCodeBlock = function (p, b) {
+    /** ch is either '~' or '`' **/
+    p.ProcessFencedCodeBlock = function (p, b, ch) {
         var fenceStart = p.m_position;
 
         // Extract the fence
         p.Mark();
-        while (p.current() == '~')
+        while (p.current() == ch)
             p.SkipForward(1);
         var strFence = p.Extract();
 
@@ -4148,10 +4169,12 @@ var MarkdownDeep = new function () {
         if (strFence.length < 3)
             return false;
 
+        /* Line may contain language name. ```ruby
         // Rest of line must be blank
         p.SkipLinespace();
         if (!p.eol())
             return false;
+        */
 
         // Skip the eol and remember start of code
         p.SkipEol();
