@@ -175,7 +175,7 @@ var MarkdownDeep = new function () {
             for (var i = 0; i < this.m_UsedFootnotes.length; i++) {
                 var fn = this.m_UsedFootnotes[i];
 
-                sb.Append("<li id=\"#fn:");
+                sb.Append("<li id=\"fn:");
                 sb.Append(fn.data); // footnote id
                 sb.Append("\">\n");
 
@@ -203,7 +203,7 @@ var MarkdownDeep = new function () {
 
                 sb.Append("</li>\n");
             }
-            sb.Append("</ol\n");
+            sb.Append("</ol>\n");
             sb.Append("</div>\n");
         }
 
@@ -291,7 +291,7 @@ var MarkdownDeep = new function () {
 
     // Get a link definition
     Markdown.prototype.GetLinkDefinition = function (id) {
-        var x = this.m_LinkDefinitions[id];
+        var x = this.m_LinkDefinitions['_'+id];
         if (x == undefined)
             return null;
         else
@@ -314,7 +314,7 @@ var MarkdownDeep = new function () {
 
     // Add a link definition
     p.AddLinkDefinition = function (link) {
-        this.m_LinkDefinitions[link.id] = link;
+        this.m_LinkDefinitions['_'+link.id] = link;
     }
 
     p.AddFootnote = function (footnote) {
@@ -1350,8 +1350,8 @@ var MarkdownDeep = new function () {
     };
 
     var allowed_attributes = {
-        "a": { "href": 1, "title": 1 },
-        "img": { "src": 1, "width": 1, "height": 1, "alt": 1, "title": 1 }
+        "a": { "href": 1, "title": 1, "class": 1 },
+        "img": { "src": 1, "width": 1, "height": 1, "alt": 1, "title": 1, "class": 1 }
     };
 
     var b = HtmlTagFlags_Block;
@@ -1403,7 +1403,7 @@ var MarkdownDeep = new function () {
     // LinkDefinition
 
     function LinkDefinition(id, url, title) {
-        this.id = id;
+        this.id = '_' + id;
         this.url = url;
         if (title == undefined)
             this.title = null;
@@ -1898,8 +1898,8 @@ var MarkdownDeep = new function () {
                     var li = t.data;
                     var sf = new SpanFormatter(this.m_Markdown);
                     sf.m_DisableLinks = true;
-
-                    li.def.RenderLink(this.m_Markdown, sb, sf.FormatDirect(li.link_text));
+                    var format = sf.FormatDirect(li.link_text);
+                    li.def.RenderLink(this.m_Markdown, sb, format);
                     break;
 
                 case TokenType_img:
@@ -2556,6 +2556,7 @@ var MarkdownDeep = new function () {
     var BlockType_dl = 27;
     var BlockType_footnote = 28;
     var BlockType_p_footnote = 29;
+    var BlockType_h2_empty = 30;
 
 
     function Block() {
@@ -2656,6 +2657,10 @@ var MarkdownDeep = new function () {
                 }
                 m.m_SpanFormatter.Format(b, this.buf, this.contentStart, this.contentLen);
                 b.Append("</h" + (this.blockType - BlockType_h1 + 1).toString() + ">\n");
+                break;
+
+            case BlockType_h2_empty:
+                b.Append("<h2></h2>");
                 break;
 
             case BlockType_hr:
@@ -2958,6 +2963,10 @@ var MarkdownDeep = new function () {
                     if (b.contentLen >= 3) {
                         b.blockType = BlockType_hr;
                         blocks.push(b);
+                    } else if (b.contentLen == 2) {
+                    // `--` gets converted to h2 (line separator)
+                        b.blockType = BlockType_h2_empty;
+                        blocks.push(b);
                     }
                     else {
                         b.RevertToPlain();
@@ -3108,6 +3117,13 @@ var MarkdownDeep = new function () {
                         case BlockType_ol_li:
                         case BlockType_ul_li:
                             if (b.blockType != BlockType_ol_li && b.blockType != BlockType_ul_li) {
+                                this.CollapseLines(blocks, lines);
+                            }
+// Fix list continuation.
+// https://github.com/toptensoftware/markdowndeep/issues/16
+// currentBlockType = 11 !=  b.blockType = 10
+// (BlockType_ul_li = 11) != (BlockType_ol_li = 10)
+                            if (b.blockType != currentBlockType) {
                                 this.CollapseLines(blocks, lines);
                             }
                             lines.push(b);
