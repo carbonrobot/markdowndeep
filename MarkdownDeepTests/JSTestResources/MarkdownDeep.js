@@ -175,7 +175,7 @@ var MarkdownDeep = new function () {
             for (var i = 0; i < this.m_UsedFootnotes.length; i++) {
                 var fn = this.m_UsedFootnotes[i];
 
-                sb.Append("<li id=\"#fn:");
+                sb.Append("<li id=\"fn:");
                 sb.Append(fn.data); // footnote id
                 sb.Append("\">\n");
 
@@ -203,7 +203,7 @@ var MarkdownDeep = new function () {
 
                 sb.Append("</li>\n");
             }
-            sb.Append("</ol\n");
+            sb.Append("</ol>\n");
             sb.Append("</div>\n");
         }
 
@@ -291,7 +291,7 @@ var MarkdownDeep = new function () {
 
     // Get a link definition
     Markdown.prototype.GetLinkDefinition = function (id) {
-        var x = this.m_LinkDefinitions[id];
+        var x = this.m_LinkDefinitions['_'+id];
         if (x == undefined)
             return null;
         else
@@ -314,7 +314,7 @@ var MarkdownDeep = new function () {
 
     // Add a link definition
     p.AddLinkDefinition = function (link) {
-        this.m_LinkDefinitions[link.id] = link;
+        this.m_LinkDefinitions['_'+link.id] = link;
     }
 
     p.AddFootnote = function (footnote) {
@@ -1350,8 +1350,8 @@ var MarkdownDeep = new function () {
     };
 
     var allowed_attributes = {
-        "a": { "href": 1, "title": 1 },
-        "img": { "src": 1, "width": 1, "height": 1, "alt": 1, "title": 1 }
+        "a": { "href": 1, "title": 1, "class": 1 },
+        "img": { "src": 1, "width": 1, "height": 1, "alt": 1, "title": 1, "class": 1 }
     };
 
     var b = HtmlTagFlags_Block;
@@ -1403,7 +1403,7 @@ var MarkdownDeep = new function () {
     // LinkDefinition
 
     function LinkDefinition(id, url, title) {
-        this.id = id;
+        this.id = '_' + id;
         this.url = url;
         if (title == undefined)
             this.title = null;
@@ -1888,6 +1888,7 @@ var MarkdownDeep = new function () {
                     sb.Append("</strong>");
                     break;
 
+                // Single line code span. `code`
                 case TokenType_code_span:
                     sb.Append("<code>");
                     sb.HtmlEncode(str, t.startOffset, t.length);
@@ -1898,8 +1899,8 @@ var MarkdownDeep = new function () {
                     var li = t.data;
                     var sf = new SpanFormatter(this.m_Markdown);
                     sf.m_DisableLinks = true;
-
-                    li.def.RenderLink(this.m_Markdown, sb, sf.FormatDirect(li.link_text));
+                    var format = sf.FormatDirect(li.link_text);
+                    li.def.RenderLink(this.m_Markdown, sb, format);
                     break;
 
                 case TokenType_img:
@@ -2452,7 +2453,7 @@ var MarkdownDeep = new function () {
         return this.CreateDataToken(token_type, new LinkInfo(def, link_text));
     }
 
-    // Process a ``` code span ```
+    // Process a `code span`.
     p.ProcessCodeSpan = function () {
         var p = this.m_Scanner;
         var start = p.m_position;
@@ -2476,10 +2477,8 @@ var MarkdownDeep = new function () {
         if (!p.Find(p.buf.substr(start, tickcount)))
             return this.CreateToken(TokenType_Text, start, p.m_position - start);
 
-        // Save end position before backing up over trailing whitespace
+        // Save end position.
         var endpos = p.m_position + tickcount;
-        while (is_whitespace(p.CharAtOffset(-1)))
-            p.SkipForward(-1);
 
         // Create the token, move back to the end and we're done
         var ret = this.CreateToken(TokenType_code_span, startofcode, p.m_position - startofcode);
@@ -2556,6 +2555,7 @@ var MarkdownDeep = new function () {
     var BlockType_dl = 27;
     var BlockType_footnote = 28;
     var BlockType_p_footnote = 29;
+    var BlockType_h2_empty = 30;
 
 
     function Block() {
@@ -2658,6 +2658,10 @@ var MarkdownDeep = new function () {
                 b.Append("</h" + (this.blockType - BlockType_h1 + 1).toString() + ">\n");
                 break;
 
+            case BlockType_h2_empty:
+                b.Append("<h2></h2>");
+                break;
+
             case BlockType_hr:
                 b.Append("<hr />\n");
                 return;
@@ -2677,12 +2681,36 @@ var MarkdownDeep = new function () {
                 b.HtmlEncode(this.buf, this.contentStart, this.contentLen);
                 return;
 
+            // ``` or ~~~ code block.
             case BlockType_codeblock:
                 b.Append("<pre");
                 if (m.FormatCodeBlockAttributes != null) {
                     b.Append(m.FormatCodeBlockAttributes(this.data));
                 }
-                b.Append("><code>");
+
+                var lines = this.children[0].buf.split("\n");
+                var rgx_lang = /(?:~~~|```)[a-zA-Z]+/;
+                // The line starting with ``` is unknown
+                // so search until it's found.
+
+                for (var i=0; i < lines.length; i++) {
+                  // ```ruby
+                  if (rgx_lang.test(lines[i]) === true) {
+                    break;
+                  }
+                }
+
+                // substring 3 to remove leading ```
+                var line1 = lines[i].substring(3);
+                var lang = '';
+                var langOffset = 0;
+                // Ensure line1 isn't just whitespace.
+                if ( /^\s*$/.test(line1) === false ) {
+                  lang = ' class="'+line1+'"';
+                  // remove lang\n from output (+1 for newline)
+                  langOffset = line1.length + 1;
+                }
+                b.Append("><code"+ lang +">");
 
                 var btemp = b;
                 if (m.FormatCodeBlock) {
@@ -2692,7 +2720,7 @@ var MarkdownDeep = new function () {
 
                 for (var i = 0; i < this.children.length; i++) {
                     var line = this.children[i];
-                    b.HtmlEncodeAndConvertTabsToSpaces(line.buf, line.contentStart, line.contentLen);
+                    b.HtmlEncodeAndConvertTabsToSpaces(line.buf, line.contentStart + langOffset, line.contentLen - langOffset);
                     b.Append("\n");
                 }
 
@@ -2958,6 +2986,10 @@ var MarkdownDeep = new function () {
                     if (b.contentLen >= 3) {
                         b.blockType = BlockType_hr;
                         blocks.push(b);
+                    } else if (b.contentLen == 2) {
+                    // `--` gets converted to h2 (line separator)
+                        b.blockType = BlockType_h2_empty;
+                        blocks.push(b);
                     }
                     else {
                         b.RevertToPlain();
@@ -3108,6 +3140,13 @@ var MarkdownDeep = new function () {
                         case BlockType_ol_li:
                         case BlockType_ul_li:
                             if (b.blockType != BlockType_ol_li && b.blockType != BlockType_ul_li) {
+                                this.CollapseLines(blocks, lines);
+                            }
+// Fix list continuation.
+// https://github.com/toptensoftware/markdowndeep/issues/16
+// currentBlockType = 11 !=  b.blockType = 10
+// (BlockType_ul_li = 11) != (BlockType_ol_li = 10)
+                            if (b.blockType != currentBlockType) {
                                 this.CollapseLines(blocks, lines);
                             }
                             lines.push(b);
@@ -3407,8 +3446,8 @@ var MarkdownDeep = new function () {
 
 
             // Fenced code blocks?
-            if (ch == '~') {
-                if (this.ProcessFencedCodeBlock(p, b))
+            if (ch == '~' || ch == '`') {
+                if (this.ProcessFencedCodeBlock(p, b, ch))
                     return b.blockType;
 
                 // Rewind
@@ -4135,12 +4174,13 @@ var MarkdownDeep = new function () {
     }
 
 
-    p.ProcessFencedCodeBlock = function (p, b) {
+    /** ch is either '~' or '`' **/
+    p.ProcessFencedCodeBlock = function (p, b, ch) {
         var fenceStart = p.m_position;
 
         // Extract the fence
         p.Mark();
-        while (p.current() == '~')
+        while (p.current() == ch)
             p.SkipForward(1);
         var strFence = p.Extract();
 
@@ -4148,10 +4188,12 @@ var MarkdownDeep = new function () {
         if (strFence.length < 3)
             return false;
 
+        /* Line may contain language name. ```ruby
         // Rest of line must be blank
         p.SkipLinespace();
         if (!p.eol())
             return false;
+        */
 
         // Skip the eol and remember start of code
         p.SkipEol();
