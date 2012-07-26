@@ -1,0 +1,18 @@
+
+
+MarkdownDeep benchmark...
+
+input string length: 440
+4000 iterations in 290 ms (0.0725 ms per iteration)
+input string length: 2341
+1000 iterations in 122 ms (0.122 ms per iteration)
+input string length: 27162
+100 iterations in 124 ms (1.24 ms per iteration)
+input string length: 11075
+10 iterations in 11 ms (1.1 ms per iteration)
+input string length: 88607
+10 iterations in 50 ms (5 ms per iteration)
+input string length: 354431
+10 iterations in 214 ms (21.4 ms per iteration)
+input string length: 687960
+10 iterations in 233 ms (23.3 ms per iteration)
