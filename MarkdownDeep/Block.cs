@@ -246,26 +246,7 @@ namespace MarkdownDeep
 					return;
 
 				case BlockType.codeblock:
-					if (m.FormatCodeBlock != null)
-					{
-						var sb = new StringBuilder();
-						foreach (var line in children)
-						{
-							m.HtmlEncodeAndConvertTabsToSpaces(sb, line.buf, line.contentStart, line.contentLen);
-							sb.Append("\n");
-						}
-						b.Append(m.FormatCodeBlock(m, sb.ToString()));
-					}
-					else
-					{
-						b.Append("<pre><code>");
-						foreach (var line in children)
-						{
-							m.HtmlEncodeAndConvertTabsToSpaces(b, line.buf, line.contentStart, line.contentLen);
-							b.Append("\n");
-						}
-						b.Append("</code></pre>\n\n");
-					}
+                    RenderCodeBlock(m, b);
 					return;
 
 				case BlockType.quote:
@@ -340,6 +321,31 @@ namespace MarkdownDeep
 					break;
 			}
 		}
+
+        internal void RenderCodeBlock(Markdown m, StringBuilder b)
+        {
+            if (m.FormatCodeBlock != null)
+            {
+                var sb = new StringBuilder();
+                foreach (var line in children)
+                {
+                    m.HtmlEncodeAndConvertTabsToSpaces(sb, line.buf, line.contentStart, line.contentLen);
+                    sb.Append("\n");
+                }
+                b.Append(m.FormatCodeBlock(m, sb.ToString()));
+            }
+            else
+            {
+                b.Append("<pre><code>");
+                foreach (var line in children)
+                {
+                    m.HtmlEncodeAndConvertTabsToSpaces(b, line.buf, line.contentStart, line.contentLen);
+                    b.Append("\n");
+                }
+                b.Append("</code></pre>\n\n");
+            }
+            return;
+        }
 
 		internal void RenderPlain(Markdown m, StringBuilder b)
 		{
