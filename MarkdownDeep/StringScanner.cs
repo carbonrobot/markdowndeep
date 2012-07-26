@@ -132,8 +132,7 @@ namespace MarkdownDeep
 		{
 			pos = end;
 		}
-
-
+        
 		// Skip to the end of the current line
 		public void SkipToEol()
 		{

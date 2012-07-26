@@ -330,19 +330,25 @@ namespace MarkdownDeep
                 foreach (var line in children)
                 {
                     m.HtmlEncodeAndConvertTabsToSpaces(sb, line.buf, line.contentStart, line.contentLen);
-                    sb.Append("\n");
+                    sb.Append(RenderTokens.NewLine);
                 }
                 b.Append(m.FormatCodeBlock(m, sb.ToString()));
             }
             else
             {
-                b.Append("<pre><code>");
+                var attr = string.Empty;
+                if (m.ExtraMode && !string.IsNullOrEmpty(this.codeBlockLang))
+                {
+                    attr = string.Format(RenderTokens.ClassAttr, this.codeBlockLang);
+                }
+                
+                b.Append(string.Format(RenderTokens.CodeBlockStart, attr));
                 foreach (var line in children)
                 {
                     m.HtmlEncodeAndConvertTabsToSpaces(b, line.buf, line.contentStart, line.contentLen);
-                    b.Append("\n");
+                    b.Append(RenderTokens.NewLine);
                 }
-                b.Append("</code></pre>\n\n");
+                b.Append(RenderTokens.CodeBlockEnd);
             }
             return;
         }
@@ -494,5 +500,7 @@ namespace MarkdownDeep
 		internal int lineLen;
 		internal object data;			// content depends on block type
 		internal List<Block> children;
+        internal string codeBlockLang;
+
 	}
 }
