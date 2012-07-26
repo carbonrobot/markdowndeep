@@ -2687,9 +2687,11 @@ var MarkdownDeep = new function () {
                 if (m.FormatCodeBlockAttributes != null) {
                     b.Append(m.FormatCodeBlockAttributes(this.data));
                 }
-                // it may not be [0], could be [1].
+
                 var lines = this.children[0].buf.split("\n");
                 var rgx_lang = /(?:~~~|```)[a-zA-Z]+/;
+                // The line starting with ``` is unknown
+                // so search until it's found.
                 for (var i=0; i < lines.length; i++) {
                   // ```ruby
                   if (rgx_lang.test(lines[i]) === true) {
