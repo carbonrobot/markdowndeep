@@ -29,5 +29,11 @@ namespace MarkdownDeepTests
 			Utils.RunResourceTestJS(resourceName);
 		}
 
+        [Test]
+        public void CodeFencingTest()
+        {
+            Utils.RunResourceTest("MarkdownDeepTests.testfiles.extramode.FencedCodeBlocks(ExtraMode).txt");
+        }
+
 	}
 }

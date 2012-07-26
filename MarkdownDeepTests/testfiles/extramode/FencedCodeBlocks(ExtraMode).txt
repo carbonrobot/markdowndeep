@@ -25,4 +25,42 @@ This is a code block after a list
 This is not a code block
 ~~
 
+~~~ c#
+This is a fenced code block with a language specified
+~~~
+
+~~~c#
+This is a fenced code block with a language specified
+~~~
+
+~~~ js
+This is a fenced code block with a language specified
+~~~
+
+```
+This is a fenced code block using backticks
+```
+
+```
+
+This is a fenced code block using backticks with blank lines around it
+
+```
+
+``
+This is still a code span
+``
+
+``` c#
+This is a fenced code block with a language specified
+```
+
+```c#
+This is a fenced code block with a language specified
+```
+
+``` js
+This is a fenced code block with a language specified
+```
+
 post
