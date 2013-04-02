@@ -1024,7 +1024,12 @@ namespace MarkdownDeep
 			{
 				if (SkipChar(']'))
 				{
-					var link_def = new LinkDefinition(null, link_text, null);
+					var url = link_text;
+
+					// TODO: Should use LinkDefinition.ParseLinkTarget, as we are duplicating the ' ' to '-' logic, but not sure how to do that
+					if (m_Markdown.GfmOptions.SpacesInLinks) url = url.Replace(' ', '-');
+					var link_def = new LinkDefinition(null, url, null);
+
 					return CreateToken(token_type, new LinkInfo(link_def, link_text));
 				}
 				else
@@ -1041,7 +1046,7 @@ namespace MarkdownDeep
 			if (SkipChar('('))
 			{
 				// Extract the url and title
-				var link_def = LinkDefinition.ParseLinkTarget(this, null, m_Markdown.ExtraMode);
+				var link_def = LinkDefinition.ParseLinkTarget(this, null, m_Markdown.ExtraMode, m_Markdown.GfmOptions.SpacesInLinks);
 				if (link_def==null)
 					return null;
 

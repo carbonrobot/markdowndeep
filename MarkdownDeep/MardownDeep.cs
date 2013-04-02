@@ -997,5 +997,7 @@ namespace MarkdownDeep
 		/// Enable [[Link]] links, where "Link" is the text and the url.
 		/// </summary>
 		public bool DoubleSquareBracketLinks { get; set; }
+
+		public bool SpacesInLinks { get; set; }
 	}
 }
