@@ -126,7 +126,8 @@ namespace MarkdownDeepTests
 			md.ExtraMode = resourceName.IndexOf("(ExtraMode)") >= 0;;
 			md.MarkdownInHtml = resourceName.IndexOf("(MarkdownInHtml)") >= 0;
 			md.AutoHeadingIDs = resourceName.IndexOf("(AutoHeadingIDs)") >= 0;
-			md.GitFlavoredMarkdownMode = resourceName.IndexOf("(Gfm)") >= 0;
+			md.GfmOptions.Linebreaks = resourceName.IndexOf("(Gfm)") >= 0;
+			md.GfmOptions.DoubleSquareBracketLinks = resourceName.IndexOf("(Gfm)") >= 0;
 
 			string actual = md.Transform(input);
 			string actual_clean = Utils.strip_redundant_whitespace(actual);

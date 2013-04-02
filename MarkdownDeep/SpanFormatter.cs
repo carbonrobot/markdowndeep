@@ -452,7 +452,7 @@ namespace MarkdownDeep
 
 					case '\n':
 					{
-						if (m_Markdown.GitFlavoredMarkdownMode)
+						if (m_Markdown.GfmOptions.Linebreaks)
 						{
 							if (!eof)
 							{
@@ -957,6 +957,9 @@ namespace MarkdownDeep
 			if (!SkipChar('['))
 				return null;
 
+			// Check for second '[' for [[Link]] type links
+			bool doubleBracketed = m_Markdown.GfmOptions.DoubleSquareBracketLinks && SkipChar('[');
+
 			// Is it a foonote?
 			var savepos=position;
 			if (m_Markdown.ExtraMode && token_type==TokenType.link && SkipChar('^'))
@@ -1015,6 +1018,21 @@ namespace MarkdownDeep
 
 			// The closing ']'
 			SkipForward(1);
+
+			// The second closing ']' for [[Link]] links
+			if (doubleBracketed)
+			{
+				if (SkipChar(']'))
+				{
+					var link_def = new LinkDefinition(null, link_text, null);
+					return CreateToken(token_type, new LinkInfo(link_def, link_text));
+				}
+				else
+				{
+					position = savepos;
+					return null;
+				}
+			}
 
 			// Save position in case we need to rewind
 			savepos = position;
