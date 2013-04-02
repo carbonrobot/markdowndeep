@@ -132,7 +132,8 @@ namespace MarkdownDeepTests
 				{
 					Linebreaks = true,
 					DoubleSquareBracketLinks = true,
-					SpacesInLinks = true
+					SpacesInLinks = true,
+					AutoImageLinks = true
 				};
 			}
 

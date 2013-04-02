@@ -103,7 +103,7 @@ namespace MarkdownDeep
 			}
 		}
 
-		internal void RenderImg(Markdown m, StringBuilder b, string alt_text)
+		internal void RenderImg(Markdown m, StringBuilder b, string alt_text, string cssClass = null)
 		{
 			HtmlTag tag = new HtmlTag("img");
 
@@ -126,6 +126,11 @@ namespace MarkdownDeep
 				sb.Length = 0;
 				Utils.SmartHtmlEncodeAmpsAndAngles(sb, title);
 				tag.attributes["title"] = sb.ToString();
+			}
+
+			if (!String.IsNullOrEmpty(cssClass))
+			{
+				tag.attributes["class"] = cssClass;
 			}
 
 			tag.closed = true;

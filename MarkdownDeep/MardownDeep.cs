@@ -999,5 +999,10 @@ namespace MarkdownDeep
 		public bool DoubleSquareBracketLinks { get; set; }
 
 		public bool SpacesInLinks { get; set; }
+
+		/// <summary>
+		/// Convert [[image.png]] (or .gif or .jpg) to ![image](image.png)
+		/// </summary>
+		public bool AutoImageLinks { get; set; }
 	}
 }

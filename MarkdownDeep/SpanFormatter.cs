@@ -230,7 +230,7 @@ namespace MarkdownDeep
 					case TokenType.img:
 					{
 						LinkInfo li = (LinkInfo)t.data;
-						li.def.RenderImg(m_Markdown, sb, li.link_text);
+						li.def.RenderImg(m_Markdown, sb, li.link_text, li.cssClass);
 						break;
 					}
 
@@ -1029,6 +1029,17 @@ namespace MarkdownDeep
 					// TODO: Should use LinkDefinition.ParseLinkTarget, as we are duplicating the ' ' to '-' logic, but not sure how to do that
 					if (m_Markdown.GfmOptions.SpacesInLinks) url = url.Replace(' ', '-');
 					var link_def = new LinkDefinition(null, url, null);
+
+					if (m_Markdown.GfmOptions.AutoImageLinks)
+					{
+						var framed = url.EndsWith("|frame");
+						if (framed) url = url.Replace("|frame", "");
+						if (url.EndsWith(".png") || url.EndsWith(".jpg") || url.EndsWith(".gif"))
+						{
+							link_text = url.Substring(0, url.Length - 4);
+							return CreateToken(TokenType.img, new LinkInfo(new LinkDefinition(null, url, null), link_text, framed ? "frame" : null));
+						}
+					}
 
 					return CreateToken(token_type, new LinkInfo(link_def, link_text));
 				}
