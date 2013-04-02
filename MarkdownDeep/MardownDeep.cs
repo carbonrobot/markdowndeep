@@ -998,6 +998,9 @@ namespace MarkdownDeep
 		/// </summary>
 		public bool DoubleSquareBracketLinks { get; set; }
 
+		/// <summary>
+		/// Convert spaces to dashes in links: [[hello world]] becomes [hello world](hello-world)
+		/// </summary>
 		public bool SpacesInLinks { get; set; }
 
 		/// <summary>
