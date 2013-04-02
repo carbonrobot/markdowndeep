@@ -450,6 +450,19 @@ namespace MarkdownDeep
 						break;
 					}
 
+					case '\n':
+					{
+						if (m_Markdown.GitFlavoredMarkdownMode)
+						{
+							if (!eof)
+							{
+								SkipEol();
+								token = CreateToken(TokenType.br, end_text_token, 0);
+							}
+						}
+						break;
+					}
+
 					case '\\':
 					{
 						// Special handling for escaping <autolinks>

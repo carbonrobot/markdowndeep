@@ -230,6 +230,15 @@ namespace MarkdownDeep
 			set;
 		}
 
+		// Set to true to enable GitFlavoredMarkdownMode, which enables some
+		// of the Git Flavored Markdown features.
+		//  - 
+		public bool GitFlavoredMarkdownMode
+		{
+			get;
+			set;
+		}
+
 		// When set, all html block level elements automatically support
 		// markdown syntax within them.  
 		// (Similar to Pandoc's handling of markdown in html)
