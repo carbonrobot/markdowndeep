@@ -1024,24 +1024,23 @@ namespace MarkdownDeep
 			{
 				if (SkipChar(']'))
 				{
-					var url = link_text;
+					var parts = link_text.Split('|');
+					var url = parts.Length > 1 ? parts[1] : parts[0];
+					var title = parts[0];
+
+					if (m_Markdown.GfmOptions.AutoImageLinks && ((title.EndsWith(".png") || title.EndsWith(".jpg") || title.EndsWith(".gif"))))
+					{
+						var framed = (url == "frame");
+						url = title;
+						if (m_Markdown.GfmOptions.SpacesInLinks) url = url.Replace(' ', '-'); // TODO: Duplicating the ' ' to '-' logic
+						title = title.Substring(0, title.Length - 4);
+						return CreateToken(TokenType.img, new LinkInfo(new LinkDefinition(null, url, null), title, framed ? "frame" : null));
+					}
 
 					// TODO: Should use LinkDefinition.ParseLinkTarget, as we are duplicating the ' ' to '-' logic, but not sure how to do that
 					if (m_Markdown.GfmOptions.SpacesInLinks) url = url.Replace(' ', '-');
 					var link_def = new LinkDefinition(null, url, null);
-
-					if (m_Markdown.GfmOptions.AutoImageLinks)
-					{
-						var framed = url.EndsWith("|frame");
-						if (framed) url = url.Replace("|frame", "");
-						if (url.EndsWith(".png") || url.EndsWith(".jpg") || url.EndsWith(".gif"))
-						{
-							link_text = url.Substring(0, url.Length - 4);
-							return CreateToken(TokenType.img, new LinkInfo(new LinkDefinition(null, url, null), link_text, framed ? "frame" : null));
-						}
-					}
-
-					return CreateToken(token_type, new LinkInfo(link_def, link_text));
+					return CreateToken(token_type, new LinkInfo(link_def, title));
 				}
 				else
 				{
