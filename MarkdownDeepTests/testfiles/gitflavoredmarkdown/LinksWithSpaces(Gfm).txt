@@ -1,0 +1,3 @@
+﻿[[Link with spaces]]
+
+[Link](Url with spaces)

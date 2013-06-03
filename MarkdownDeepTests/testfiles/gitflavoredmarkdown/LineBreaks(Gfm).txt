@@ -1,0 +1,7 @@
+﻿Line breaks without double space at the end
+should
+also
+
+break
+lines
+apart

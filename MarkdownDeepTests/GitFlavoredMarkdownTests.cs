@@ -9,11 +9,11 @@ using System.Reflection;
 namespace MarkdownDeepTests
 {
 	[TestFixture]
-	class SpanLevelTests
+	class GitFlavoredMarkdownTests
 	{
 		public static IEnumerable<TestCaseData> GetTests()
 		{
-			return Utils.GetTests("spantests");
+			return Utils.GetTests("gitflavoredmarkdown");
 		}
 
 

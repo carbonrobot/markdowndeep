@@ -1,0 +1,5 @@
+﻿[[Link]]
+
+[[Title|Url]]
+
+[[Title](Url)]

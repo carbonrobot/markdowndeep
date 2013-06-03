@@ -1,0 +1,5 @@
+﻿[[image.png]]
+[[image.jpg]]
+[[image.gif]]
+[[image.png|frame]]
+[[filename with spaces.png|frame]]

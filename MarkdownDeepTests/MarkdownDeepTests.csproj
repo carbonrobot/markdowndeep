@@ -45,8 +45,6 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -61,12 +59,10 @@
     <Compile Include="CodeSpanTests.cs" />
     <Compile Include="AutoLinkTests.cs" />
     <Compile Include="AutoHeaderIDTests.cs" />
+    <Compile Include="GitFlavoredMarkdownTests.cs" />
     <Compile Include="TableSpecTests.cs" />
     <Compile Include="ExtraMode.cs" />
     <Compile Include="SafeModeTests.cs" />
-    <Compile Include="JavascriptTests.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="MoreTestFiles.cs" />
     <Compile Include="LinkAndImgTests.cs" />
     <Compile Include="SpanLevelTests.cs" />
@@ -396,15 +392,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="JSTestResources\JSHost.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="JSTestResources\MarkdownDeep.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="JSTestResources\MarkdownDeep.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="testfiles\gitflavoredmarkdown\AutoImageLinks%28Gfm%29.html" />
+    <EmbeddedResource Include="testfiles\gitflavoredmarkdown\AutoImageLinks%28Gfm%29.txt" />
+    <EmbeddedResource Include="testfiles\gitflavoredmarkdown\DoubleSquareBracketLinks%28Gfm%29.html" />
+    <EmbeddedResource Include="testfiles\gitflavoredmarkdown\DoubleSquareBracketLinks%28Gfm%29.txt" />
+    <EmbeddedResource Include="testfiles\gitflavoredmarkdown\LineBreaks%28Gfm%29.html" />
+    <EmbeddedResource Include="testfiles\gitflavoredmarkdown\LineBreaks%28Gfm%29.txt" />
+    <EmbeddedResource Include="testfiles\gitflavoredmarkdown\LinksWithSpaces%28Gfm%29.html" />
+    <EmbeddedResource Include="testfiles\gitflavoredmarkdown\LinksWithSpaces%28Gfm%29.txt" />
     <EmbeddedResource Include="testfiles\blocktests\PartiallyIndentedLists.html" />
     <EmbeddedResource Include="testfiles\blocktests\PartiallyIndentedLists.txt" />
     <EmbeddedResource Include="testfiles\blocktests\HtmlAttributeWithoutValue.txt" />
@@ -455,6 +450,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>xcopy /D /Y "$(SolutionDir)MarkdownDeepJS\*.js" "$(ProjectDir)JSTestResources"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>
